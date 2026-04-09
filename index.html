@@ -1,0 +1,1081 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Bus Reservation & Cancellation System</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        :root {
+            --primary: #667eea;
+            --secondary: #764ba2;
+            --success: #4caf50;
+            --danger: #ff6b6b;
+            --warning: #ffa502;
+            --info: #2196f3;
+            --light: #f8f9ff;
+            --dark: #1a1a2e;
+            --shadow: 0 10px 40px rgba(0, 0, 0, 0.15);
+            --transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+
+        body {
+            font-family: 'Poppins', 'Segoe UI', sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            padding: 0;
+            color: #333;
+            overflow-x: hidden;
+        }
+
+        /* Navigation */
+        .navbar {
+            background: rgba(255, 255, 255, 0.95);
+            backdrop-filter: blur(10px);
+            padding: 1rem 2rem;
+            box-shadow: 0 4px 30px rgba(0, 0, 0, 0.1);
+            position: sticky;
+            top: 0;
+            z-index: 1000;
+        }
+
+        .navbar-container {
+            max-width: 1400px;
+            margin: 0 auto;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .logo {
+            font-size: 1.8em;
+            font-weight: 800;
+            background: linear-gradient(135deg, #667eea, #764ba2);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .nav-links {
+            display: flex;
+            gap: 2rem;
+            list-style: none;
+        }
+
+        .nav-link {
+            color: #333;
+            text-decoration: none;
+            font-weight: 600;
+            position: relative;
+            transition: var(--transition);
+        }
+
+        .nav-link::after {
+            content: '';
+            position: absolute;
+            bottom: -5px;
+            left: 0;
+            width: 0;
+            height: 2px;
+            background: linear-gradient(135deg, #667eea, #764ba2);
+            transition: var(--transition);
+        }
+
+        .nav-link:hover::after {
+            width: 100%;
+        }
+
+        /* Hero Section */
+        .hero {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 6rem 2rem;
+            text-align: center;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .hero::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: url('data:image/svg+xml,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1200 120"><path d="M0,50 Q300,0 600,50 T1200,50 L1200,120 L0,120 Z" fill="rgba(255,255,255,0.1)"/></svg>');
+            background-size: cover;
+            opacity: 0.3;
+        }
+
+        .hero-content {
+            position: relative;
+            z-index: 1;
+            animation: slideInDown 0.8s ease-out;
+        }
+
+        .hero h1 {
+            font-size: 3.5em;
+            margin-bottom: 1rem;
+            font-weight: 800;
+            letter-spacing: -1px;
+        }
+
+        .hero p {
+            font-size: 1.2em;
+            opacity: 0.95;
+            margin-bottom: 2rem;
+            max-width: 600px;
+            margin-left: auto;
+            margin-right: auto;
+        }
+
+        .cta-button {
+            display: inline-block;
+            padding: 1rem 2.5rem;
+            background: white;
+            color: #667eea;
+            text-decoration: none;
+            border-radius: 50px;
+            font-weight: 700;
+            transition: var(--transition);
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.2);
+            cursor: pointer;
+            border: none;
+            font-size: 1em;
+        }
+
+        .cta-button:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 15px 40px rgba(0, 0, 0, 0.3);
+        }
+
+        /* Container */
+        .container {
+            max-width: 1400px;
+            margin: 0 auto;
+            padding: 4rem 2rem;
+        }
+
+        /* Header Section */
+        .section-header {
+            text-align: center;
+            margin-bottom: 4rem;
+            animation: fadeIn 0.8s ease-out;
+        }
+
+        .section-header h2 {
+            font-size: 2.5em;
+            color: white;
+            margin-bottom: 0.5rem;
+            font-weight: 800;
+        }
+
+        .section-header p {
+            color: rgba(255, 255, 255, 0.8);
+            font-size: 1.1em;
+        }
+
+        .underline {
+            width: 60px;
+            height: 4px;
+            background: white;
+            margin: 1rem auto 0;
+            border-radius: 2px;
+        }
+
+        /* Grid Layout */
+        .grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(330px, 1fr));
+            gap: 2rem;
+            margin-bottom: 3rem;
+        }
+
+        /* Cards */
+        .card {
+            background: white;
+            border-radius: 15px;
+            overflow: hidden;
+            box-shadow: var(--shadow);
+            transition: var(--transition);
+            animation: fadeInUp 0.6s ease-out;
+        }
+
+        .card:hover {
+            transform: translateY(-10px);
+            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.2);
+        }
+
+        .card-header {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 2rem;
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+            font-size: 1.4em;
+            font-weight: 700;
+        }
+
+        .card-icon {
+            font-size: 2em;
+            opacity: 0.9;
+        }
+
+        .card-content {
+            padding: 2rem;
+        }
+
+        .form-group {
+            margin-bottom: 1.5rem;
+        }
+
+        label {
+            display: block;
+            margin-bottom: 0.5rem;
+            color: #333;
+            font-weight: 600;
+            font-size: 0.95em;
+        }
+
+        input, select, textarea {
+            width: 100%;
+            padding: 0.9rem 1rem;
+            border: 2px solid #e0e0e0;
+            border-radius: 8px;
+            font-size: 1em;
+            font-family: 'Poppins', sans-serif;
+            transition: var(--transition);
+        }
+
+        input:focus, select:focus, textarea:focus {
+            outline: none;
+            border-color: #667eea;
+            box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1);
+        }
+
+        button {
+            width: 100%;
+            padding: 1rem;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            border: none;
+            border-radius: 8px;
+            font-size: 1em;
+            font-weight: 700;
+            cursor: pointer;
+            transition: var(--transition);
+            font-family: 'Poppins', sans-serif;
+            box-shadow: 0 4px 15px rgba(102, 126, 234, 0.4);
+        }
+
+        button:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 25px rgba(102, 126, 234, 0.5);
+        }
+
+        button:active {
+            transform: translateY(0);
+        }
+
+        /* Seats Grid */
+        .seat-grid {
+            display: grid;
+            grid-template-columns: repeat(4, 1fr);
+            gap: 10px;
+            margin: 1.5rem 0;
+            padding: 1.5rem;
+            background: #f8f9ff;
+            border-radius: 10px;
+        }
+
+        .seat {
+            aspect-ratio: 1;
+            border: 2px solid #ddd;
+            border-radius: 8px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: 700;
+            cursor: pointer;
+            transition: var(--transition);
+            background: white;
+            color: #333;
+            font-size: 0.9em;
+        }
+
+        .seat:hover:not(.booked) {
+            border-color: #667eea;
+            background: #f0f4ff;
+            transform: scale(1.05);
+        }
+
+        .seat.available {
+            border-color: #4caf50;
+            color: #4caf50;
+        }
+
+        .seat.booked {
+            background: #ff6b6b;
+            color: white;
+            border-color: #ff6b6b;
+            cursor: not-allowed;
+            opacity: 0.6;
+        }
+
+        .seat.selected {
+            background: linear-gradient(135deg, #667eea, #764ba2);
+            color: white;
+            border-color: #667eea;
+            transform: scale(1.1);
+            box-shadow: 0 5px 15px rgba(102, 126, 234, 0.4);
+        }
+
+        /* Routes Display */
+        .route-card {
+            background: linear-gradient(135deg, #f8f9ff 0%, #f0f4ff 100%);
+            border-left: 4px solid #667eea;
+            padding: 1.5rem;
+            border-radius: 8px;
+            margin-bottom: 1rem;
+            transition: var(--transition);
+        }
+
+        .route-card:hover {
+            box-shadow: 0 5px 20px rgba(102, 126, 234, 0.2);
+            transform: translateX(5px);
+        }
+
+        .route-title {
+            font-weight: 700;
+            color: #667eea;
+            font-size: 1.1em;
+            margin-bottom: 0.8rem;
+        }
+
+        .route-detail {
+            color: #666;
+            font-size: 0.95em;
+            display: flex;
+            justify-content: space-between;
+            margin-bottom: 0.5rem;
+        }
+
+        /* Tabs */
+        .tabs {
+            display: flex;
+            gap: 5px;
+            margin-bottom: 1.5rem;
+            border-bottom: 2px solid #e0e0e0;
+            background: #f8f9ff;
+            border-radius: 8px;
+            padding: 5px;
+        }
+
+        .tab-btn {
+            flex: 1;
+            padding: 0.8rem;
+            background: transparent;
+            color: #667eea;
+            border: none;
+            font-weight: 600;
+            cursor: pointer;
+            transition: var(--transition);
+            border-radius: 6px;
+        }
+
+        .tab-btn.active {
+            background: white;
+            color: #667eea;
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+        }
+
+        .tab-content {
+            display: none;
+        }
+
+        .tab-content.active {
+            display: block;
+            animation: fadeIn 0.3s ease-out;
+        }
+
+        /* Messages */
+        .message {
+            padding: 1.5rem;
+            border-radius: 8px;
+            margin-top: 1rem;
+            display: none;
+            animation: slideInUp 0.3s ease-out;
+        }
+
+        .message.success {
+            background: #d4edda;
+            color: #155724;
+            border-left: 4px solid #28a745;
+        }
+
+        .message.error {
+            background: #f8d7da;
+            color: #721c24;
+            border-left: 4px solid #f5c6cb;
+        }
+
+        /* Stats */
+        .stats-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+            gap: 1.5rem;
+            margin-top: 2rem;
+        }
+
+        .stat-card {
+            background: white;
+            padding: 2rem;
+            border-radius: 12px;
+            text-align: center;
+            box-shadow: var(--shadow);
+            transition: var(--transition);
+        }
+
+        .stat-card:hover {
+            transform: translateY(-5px);
+        }
+
+        .stat-number {
+            font-size: 2.5em;
+            font-weight: 800;
+            background: linear-gradient(135deg, #667eea, #764ba2);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+            margin-bottom: 0.5rem;
+        }
+
+        .stat-label {
+            color: #666;
+            font-weight: 600;
+        }
+
+        /* Table */
+        .table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 1.5rem;
+        }
+
+        .table th {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 1rem;
+            text-align: left;
+            font-weight: 700;
+        }
+
+        .table td {
+            padding: 1rem;
+            border-bottom: 1px solid #e0e0e0;
+        }
+
+        .table tr:hover {
+            background: #f8f9ff;
+        }
+
+        /* Info Box */
+        .info-box {
+            background: linear-gradient(135deg, #e7f3ff 0%, #f0f4ff 100%);
+            color: #004085;
+            padding: 1.5rem;
+            border-radius: 8px;
+            margin-bottom: 1.5rem;
+            border-left: 4px solid #667eea;
+            font-size: 0.95em;
+            line-height: 1.6;
+        }
+
+        /* Popular Route Badge */
+        .popular-badge {
+            background: linear-gradient(135deg, #ffa502 0%, #ff6b6b 100%);
+            color: white;
+            padding: 2rem;
+            border-radius: 12px;
+            text-align: center;
+            margin-top: 1.5rem;
+        }
+
+        .popular-badge .badge-emoji {
+            font-size: 3em;
+            margin-bottom: 1rem;
+        }
+
+        .popular-badge .badge-title {
+            font-size: 1.3em;
+            font-weight: 700;
+            margin-bottom: 0.8rem;
+        }
+
+        .popular-badge .badge-content {
+            font-size: 1.1em;
+            opacity: 0.95;
+        }
+
+        /* Footer */
+        footer {
+            background: rgba(0, 0, 0, 0.8);
+            color: white;
+            text-align: center;
+            padding: 2rem;
+            margin-top: 4rem;
+        }
+
+        footer p {
+            opacity: 0.8;
+        }
+
+        /* Animations */
+        @keyframes slideInDown {
+            from {
+                opacity: 0;
+                transform: translateY(-30px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        @keyframes slideInUp {
+            from {
+                opacity: 0;
+                transform: translateY(30px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        @keyframes fadeIn {
+            from {
+                opacity: 0;
+            }
+            to {
+                opacity: 1;
+            }
+        }
+
+        @keyframes fadeInUp {
+            from {
+                opacity: 0;
+                transform: translateY(20px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        /* Responsive */
+        @media (max-width: 768px) {
+            .hero h1 {
+                font-size: 2.2em;
+            }
+
+            .section-header h2 {
+                font-size: 1.8em;
+            }
+
+            .grid {
+                grid-template-columns: 1fr;
+            }
+
+            .nav-links {
+                gap: 1rem;
+                font-size: 0.9em;
+            }
+
+            .seat-grid {
+                grid-template-columns: repeat(2, 1fr);
+            }
+
+            .stats-grid {
+                grid-template-columns: repeat(2, 1fr);
+            }
+        }
+
+        .hidden {
+            display: none !important;
+        }
+    </style>
+</head>
+<body>
+    <!-- Navigation -->
+    <nav class="navbar">
+        <div class="navbar-container">
+            <div class="logo">
+                🚌 BRS System
+            </div>
+            <ul class="nav-links">
+                <li><a href="#booking" class="nav-link">Booking</a></li>
+                <li><a href="#reports" class="nav-link">Reports</a></li>
+                <li><a href="#statistics" class="nav-link">Statistics</a></li>
+            </ul>
+        </div>
+    </nav>
+
+    <!-- Hero Section -->
+    <section class="hero">
+        <div class="hero-content">
+            <h1>🎫 Bus Reservation System</h1>
+            <p>Fast, reliable, and easy ticket booking with instant confirmation</p>
+            <button class="cta-button" onclick="scrollToSection('booking')">Book Now</button>
+        </div>
+    </section>
+
+    <!-- Main Container -->
+    <div class="container">
+        <!-- Booking Section -->
+        <section id="booking">
+            <div class="section-header">
+                <h2>📖 Book Your Journey</h2>
+                <p>Choose your route, select a seat, and complete your booking</p>
+                <div class="underline"></div>
+            </div>
+
+            <div class="grid">
+                <!-- View Routes Card -->
+                <div class="card" style="animation-delay: 0.1s;">
+                    <div class="card-header">
+                        <span class="card-icon">🗺️</span>
+                        <span>Available Routes</span>
+                    </div>
+                    <div class="card-content">
+                        <div class="info-box">
+                            Browse all available routes with real-time seat availability
+                        </div>
+                        <button onclick="viewRoutes()">🔍 View Routes</button>
+                        <div id="routesDisplay"></div>
+                    </div>
+                </div>
+
+                <!-- Book Ticket Card -->
+                <div class="card" style="animation-delay: 0.2s;">
+                    <div class="card-header">
+                        <span class="card-icon">🎫</span>
+                        <span>Book Ticket</span>
+                    </div>
+                    <div class="card-content">
+                        <div class="form-group">
+                            <label>🚂 Select Route</label>
+                            <select id="bookRoute" onchange="updateSeats()">
+                                <option value="">-- Choose a Route --</option>
+                                <option value="Route1">Route1: Delhi → Mumbai (Rs. 500)</option>
+                                <option value="Route2">Route2: Bangalore → Chennai (Rs. 300)</option>
+                                <option value="Route3">Route3: Kolkata → Delhi (Rs. 400)</option>
+                                <option value="Route4">Route4: Pune → Goa (Rs. 250)</option>
+                            </select>
+                        </div>
+
+                        <div class="form-group">
+                            <label>👤 Passenger Name</label>
+                            <input type="text" id="passengerName" placeholder="Enter your full name">
+                        </div>
+
+                        <div class="form-group">
+                            <label>💺 Select Seat</label>
+                            <div class="seat-grid" id="seatLayout">
+                                <p style="grid-column: 1/-1; color: #999; text-align: center;">Select a route first</p>
+                            </div>
+                        </div>
+
+                        <input type="hidden" id="selectedSeat">
+                        <button onclick="bookTicket()">✓ Confirm Booking</button>
+                        <div class="message success" id="bookSuccess"></div>
+                        <div class="message error" id="bookError"></div>
+                    </div>
+                </div>
+
+                <!-- Search & Cancel Card -->
+                <div class="card" style="animation-delay: 0.3s;">
+                    <div class="card-header">
+                        <span class="card-icon">⚙️</span>
+                        <span>Manage Tickets</span>
+                    </div>
+                    <div class="card-content">
+                        <div class="tabs">
+                            <button class="tab-btn active" onclick="switchTab(event, 'searchTab')">🔍 Search</button>
+                            <button class="tab-btn" onclick="switchTab(event, 'cancelTab')">❌ Cancel</button>
+                        </div>
+
+                        <!-- Search Tab -->
+                        <div id="searchTab" class="tab-content active">
+                            <div class="form-group">
+                                <label>📌 Ticket ID</label>
+                                <input type="text" id="searchTicketID" placeholder="e.g., TK001">
+                            </div>
+                            <button onclick="searchTicket()">🔍 Search Ticket</button>
+                            <div id="searchResult" style="margin-top: 1.5rem;"></div>
+                        </div>
+
+                        <!-- Cancel Tab -->
+                        <div id="cancelTab" class="tab-content">
+                            <div class="form-group">
+                                <label>📌 Ticket ID</label>
+                                <input type="text" id="cancelTicketID" placeholder="e.g., TK001">
+                            </div>
+                            <button onclick="cancelTicket()">🚫 Cancel Ticket</button>
+                            <div class="message success" id="cancelSuccess"></div>
+                            <div class="message error" id="cancelError"></div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- Reports Section -->
+        <section id="reports">
+            <div class="section-header">
+                <h2>📊 Business Reports</h2>
+                <p>Detailed analytics and revenue insights</p>
+                <div class="underline"></div>
+            </div>
+
+            <div class="grid">
+                <div class="card" style="animation-delay: 0.4s;">
+                    <div class="card-header">
+                        <span class="card-icon">📈</span>
+                        <span>Reports</span>
+                    </div>
+                    <div class="card-content">
+                        <div class="tabs">
+                            <button class="tab-btn active" onclick="switchTab(event, 'revenueTab')">💰 Revenue</button>
+                            <button class="tab-btn" onclick="switchTab(event, 'bookingsTab')">📋 Bookings</button>
+                            <button class="tab-btn" onclick="switchTab(event, 'popularTab')">⭐ Popular</button>
+                        </div>
+
+                        <div id="revenueTab" class="tab-content active">
+                            <button onclick="generateRevenueReport()">🔄 Load Revenue Report</button>
+                            <div id="revenueReport" style="margin-top: 1.5rem;"></div>
+                        </div>
+
+                        <div id="bookingsTab" class="tab-content">
+                            <button onclick="generateBookingsReport()">🔄 Load Bookings Report</button>
+                            <div id="bookingsReport" style="margin-top: 1.5rem;"></div>
+                        </div>
+
+                        <div id="popularTab" class="tab-content">
+                            <button onclick="generatePopularReport()">🔄 Find Most Popular</button>
+                            <div id="popularReport" style="margin-top: 1.5rem;"></div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- Statistics Section -->
+        <section id="statistics">
+            <div class="section-header">
+                <h2>📈 System Statistics</h2>
+                <p>Real-time system performance and metrics</p>
+                <div class="underline"></div>
+            </div>
+
+            <button onclick="displayStatistics()" style="width: 100%; max-width: 400px; margin: 0 auto 2rem; display: block;">
+                🔄 Refresh Statistics
+            </button>
+
+            <div class="stats-grid" id="statsDisplay"></div>
+        </section>
+    </div>
+
+    <!-- Footer -->
+    <footer>
+        <p>&copy; 2026 Bus Reservation System | VIT - OOPS DA 2 Mini Project</p>
+        <p>Built with ❤️ for Excellence</p>
+    </footer>
+
+    <script>
+        // Data storage
+        const mockRoutes = [
+            { id: 'Route1', from: 'Delhi', to: 'Mumbai', fare: 500, capacity: 50, booked: [] },
+            { id: 'Route2', from: 'Bangalore', to: 'Chennai', fare: 300, capacity: 40, booked: [] },
+            { id: 'Route3', from: 'Kolkata', to: 'Delhi', fare: 400, capacity: 35, booked: [] },
+            { id: 'Route4', from: 'Pune', to: 'Goa', fare: 250, capacity: 30, booked: [] }
+        ];
+
+        let mockTickets = [];
+        let ticketCounter = 0;
+
+        function viewRoutes() {
+            const htmlContent = mockRoutes.map((route, index) => `
+                <div class="route-card">
+                    <div class="route-title">🚌 [${index + 1}] ${route.id}</div>
+                    <div class="route-detail">
+                        <span>📍 ${route.from} → ${route.to}</span>
+                        <span><strong>Rs. ${route.fare}</strong></span>
+                    </div>
+                    <div class="route-detail">
+                        <span>Available: <strong>${route.capacity - route.booked.length}/${route.capacity}</strong></span>
+                    </div>
+                </div>
+            `).join('');
+            document.getElementById('routesDisplay').innerHTML = htmlContent || '<p style="color: #999;">No routes available</p>';
+        }
+
+        function updateSeats() {
+            const selectedRoute = document.getElementById('bookRoute').value;
+            const seatLayout = document.getElementById('seatLayout');
+            
+            if (!selectedRoute) {
+                seatLayout.innerHTML = '<p style="grid-column: 1/-1; color: #999; text-align: center;">Select a route first</p>';
+                return;
+            }
+
+            const route = mockRoutes.find(r => r.id === selectedRoute);
+            let html = '';
+
+            for (let i = 1; i <= route.capacity; i++) {
+                const isBooked = route.booked.includes(i);
+                const className = isBooked ? 'seat booked' : 'seat available';
+                
+                html += `
+                    <div class="${className}" 
+                         onclick="${!isBooked ? `selectSeat(${i})` : ''}" 
+                         title="${isBooked ? 'Booked' : 'Available'}">
+                        ${i}
+                    </div>
+                `;
+            }
+
+            seatLayout.innerHTML = html;
+        }
+
+        function selectSeat(seatNumber) {
+            document.querySelectorAll('.seat.available').forEach(seat => seat.classList.remove('selected'));
+            event.target.classList.add('selected');
+            document.getElementById('selectedSeat').value = seatNumber;
+        }
+
+        function bookTicket() {
+            const passengerName = document.getElementById('passengerName').value;
+            const route = document.getElementById('bookRoute').value;
+            const seat = document.getElementById('selectedSeat').value;
+
+            const successDiv = document.getElementById('bookSuccess');
+            const errorDiv = document.getElementById('bookError');
+
+            if (!passengerName || !route || !seat) {
+                errorDiv.textContent = '⚠️ Please fill all fields and select a seat!';
+                errorDiv.style.display = 'block';
+                successDiv.style.display = 'none';
+                return;
+            }
+
+            ticketCounter++;
+            const newTicketID = `TK${String(ticketCounter).padStart(3, '0')}`;
+            const mockRoute = mockRoutes.find(r => r.id === route);
+            
+            mockTickets.push({
+                id: newTicketID,
+                passenger: passengerName,
+                route: route,
+                seat: parseInt(seat),
+                amount: mockRoute.fare
+            });
+
+            mockRoute.booked.push(parseInt(seat));
+
+            successDiv.innerHTML = `
+                ✓ <strong>Booking Successful!</strong><br>
+                <strong>Ticket ID:</strong> ${newTicketID}<br>
+                <strong>Passenger:</strong> ${passengerName}<br>
+                <strong>Route:</strong> ${route} | <strong>Seat:</strong> ${seat}<br>
+                <strong>Amount:</strong> Rs. ${mockRoute.fare}
+            `;
+            successDiv.style.display = 'block';
+            errorDiv.style.display = 'none';
+
+            document.getElementById('passengerName').value = '';
+            document.getElementById('bookRoute').value = '';
+            document.getElementById('selectedSeat').value = '';
+            updateSeats();
+        }
+
+        function cancelTicket() {
+            const ticketID = document.getElementById('cancelTicketID').value;
+            const successDiv = document.getElementById('cancelSuccess');
+            const errorDiv = document.getElementById('cancelError');
+
+            const ticket = mockTickets.find(t => t.id === ticketID);
+
+            if (!ticket) {
+                errorDiv.textContent = `⚠️ Ticket ${ticketID} not found!`;
+                errorDiv.style.display = 'block';
+                successDiv.style.display = 'none';
+                return;
+            }
+
+            const route = mockRoutes.find(r => r.id === ticket.route);
+            route.booked = route.booked.filter(s => s !== ticket.seat);
+            mockTickets = mockTickets.filter(t => t.id !== ticketID);
+
+            successDiv.innerHTML = `
+                ✓ <strong>Cancellation Successful!</strong><br>
+                <strong>Ticket ID:</strong> ${ticketID}<br>
+                <strong>Passenger:</strong> ${ticket.passenger}<br>
+                <strong>Refund Amount:</strong> Rs. ${ticket.amount}<br>
+                Seat ${ticket.seat} released.
+            `;
+            successDiv.style.display = 'block';
+            errorDiv.style.display = 'none';
+
+            document.getElementById('cancelTicketID').value = '';
+        }
+
+        function searchTicket() {
+            const ticketID = document.getElementById('searchTicketID').value;
+            const searchResult = document.getElementById('searchResult');
+
+            const ticket = mockTickets.find(t => t.id === ticketID);
+
+            if (!ticket) {
+                searchResult.innerHTML = `<div class="message error">❌ Ticket ${ticketID} not found!</div>`;
+                return;
+            }
+
+            searchResult.innerHTML = `
+                <div class="info-box">
+                    ✓ <strong>Ticket Found!</strong><br><br>
+                    <strong>Ticket ID:</strong> ${ticket.id}<br>
+                    <strong>Passenger:</strong> ${ticket.passenger}<br>
+                    <strong>Route:</strong> ${ticket.route}<br>
+                    <strong>Seat:</strong> ${ticket.seat}<br>
+                    <strong>Amount:</strong> Rs. ${ticket.amount}
+                </div>
+            `;
+        }
+
+        function switchTab(e, tabName) {
+            document.querySelectorAll('.tab-content').forEach(tab => tab.classList.remove('active'));
+            document.querySelectorAll('.tab-btn').forEach(btn => btn.classList.remove('active'));
+            
+            document.getElementById(tabName).classList.add('active');
+            e.target.classList.add('active');
+        }
+
+        function generateRevenueReport() {
+            const revenuePerRoute = {};
+            mockTickets.forEach(ticket => {
+                revenuePerRoute[ticket.route] = (revenuePerRoute[ticket.route] || 0) + ticket.amount;
+            });
+
+            let html = '<table class="table"><thead><tr><th>🚌 Route</th><th>💰 Revenue</th></tr></thead><tbody>';
+            let totalRevenue = 0;
+
+            Object.entries(revenuePerRoute).forEach(([route, revenue]) => {
+                html += `<tr><td>${route}</td><td>Rs. ${revenue}</td></tr>`;
+                totalRevenue += revenue;
+            });
+
+            if (Object.keys(revenuePerRoute).length === 0) {
+                html += '<tr><td colspan="2" style="text-align: center; color: #999;">No bookings yet</td></tr>';
+            } else {
+                html += `<tr style="background: linear-gradient(135deg, #667eea, #764ba2); color: white; font-weight: 700;"><td>TOTAL</td><td>Rs. ${totalRevenue}</td></tr>`;
+            }
+
+            html += '</tbody></table>';
+            document.getElementById('revenueReport').innerHTML = html;
+        }
+
+        function generateBookingsReport() {
+            const bookingsPerRoute = {};
+            mockTickets.forEach(ticket => {
+                bookingsPerRoute[ticket.route] = (bookingsPerRoute[ticket.route] || 0) + 1;
+            });
+
+            let html = '<table class="table"><thead><tr><th>🚌 Route</th><th>🎫 Bookings</th></tr></thead><tbody>';
+
+            Object.entries(bookingsPerRoute).forEach(([route, bookings]) => {
+                html += `<tr><td>${route}</td><td><strong>${bookings}</strong> ticket(s)</td></tr>`;
+            });
+
+            if (Object.keys(bookingsPerRoute).length === 0) {
+                html += '<tr><td colspan="2" style="text-align: center; color: #999;">No bookings yet</td></tr>';
+            }
+
+            html += '</tbody></table>';
+            document.getElementById('bookingsReport').innerHTML = html;
+        }
+
+        function generatePopularReport() {
+            const bookingsPerRoute = {};
+            mockTickets.forEach(ticket => {
+                bookingsPerRoute[ticket.route] = (bookingsPerRoute[ticket.route] || 0) + 1;
+            });
+
+            if (Object.keys(bookingsPerRoute).length === 0) {
+                document.getElementById('popularReport').innerHTML = '<div class="message error">No bookings yet</div>';
+                return;
+            }
+
+            const popularRoute = Object.entries(bookingsPerRoute).sort((a, b) => b[1] - a[1])[0];
+            const route = mockRoutes.find(r => r.id === popularRoute[0]);
+
+            const html = `
+                <div class="popular-badge">
+                    <div class="badge-emoji">⭐</div>
+                    <div class="badge-title">${popularRoute[0]}</div>
+                    <div class="badge-content">
+                        ${route.from} → ${route.to}<br><br>
+                        <strong>${popularRoute[1]} Bookings</strong> | Rs. ${route.fare} per ticket
+                    </div>
+                </div>
+            `;
+
+            document.getElementById('popularReport').innerHTML = html;
+        }
+
+        function displayStatistics() {
+            const totalRoutes = mockRoutes.length;
+            const totalBookings = mockTickets.length;
+            const totalRevenue = mockTickets.reduce((sum, t) => sum + t.amount, 0);
+            const totalAvailableSeats = mockRoutes.reduce((sum, r) => sum + (r.capacity - r.booked.length), 0);
+
+            const statsHtml = `
+                <div class="stat-card">
+                    <div class="stat-number">${totalRoutes}</div>
+                    <div class="stat-label">🚌 Total Routes</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-number">${totalBookings}</div>
+                    <div class="stat-label">🎫 Total Bookings</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-number">Rs. ${totalRevenue}</div>
+                    <div class="stat-label">💰 Total Revenue</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-number">${totalAvailableSeats}</div>
+                    <div class="stat-label">🪑 Available Seats</div>
+                </div>
+            `;
+
+            document.getElementById('statsDisplay').innerHTML = statsHtml;
+        }
+
+        function scrollToSection(id) {
+            document.getElementById(id).scrollIntoView({ behavior: 'smooth' });
+        }
+
+        // Load routes on page load
+        window.addEventListener('load', viewRoutes);
+    </script>
+</body>
+</html>
